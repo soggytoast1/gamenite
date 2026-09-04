@@ -189,7 +189,6 @@ body[data-screen="room"] #screen-room{display:block}
     <span id="supaMode" class="off"><span class="dot"></span>supabase · off</span>
   </div>
   <button class="iconbtn" id="btnSound" title="Sound"><i data-lucide="volume-2"></i></button>
-  <button class="iconbtn" id="btnSettings" title="Settings"><i data-lucide="settings-2"></i></button>
 </header>
 
 <!-- ============ HOME ============ -->
@@ -225,7 +224,7 @@ body[data-screen="room"] #screen-room{display:block}
     </div>
   </section>
   <footer class="homefoot">
-    Two tabs of this browser count as two players<span class="sep">·</span>add a free Supabase project in settings to play across devices<span class="sep">·</span>keep the host's tab in front while a shot is rolling
+    Two tabs of this browser count as two players<span class="sep">·</span>play across devices with Supabase live<span class="sep">·</span>keep the host's tab in front while a shot is rolling
   </footer>
 </main>
 
@@ -284,40 +283,6 @@ body[data-screen="room"] #screen-room{display:block}
 </main>
 
 <!-- ============ SETTINGS MODAL ============ -->
-<div id="modal">
-  <div class="mbox inner">
-    <button class="iconbtn mclose" id="btnModalClose"><i data-lucide="x"></i></button>
-    <h2>House settings</h2>
-    <p class="sub">gamenite works out of the box between tabs of one browser. Plug in Supabase (free tier is plenty) to share tables across phones and computers.</p>
-
-    <h4>Supabase connection</h4>
-    <p>Paste your project URL and anon public key — both live in Supabase → Settings → API. They only ever sit in this browser's localStorage.</p>
-    <div class="mrow"><input id="supaUrl" placeholder="https://xxxx.supabase.co"></div>
-    <div class="mrow"><input id="supaKey" placeholder="eyJhbGciOi… (anon public key)"></div>
-    <div class="mrow">
-      <button class="btn" id="btnSupaSave">Save &amp; test</button>
-      <button class="btn ghost" id="btnSupaClear">Disconnect</button>
-    </div>
-    <div class="mstat" id="supaStat"></div>
-
-    <h4>One-time SQL</h4>
-    <p>Run this once in Supabase → SQL Editor to create the rooms table:</p>
-    <div class="sqlbox" id="sqlBox"><button class="sqlcopy" id="btnSqlCopy">COPY</button>create table if not exists public.rooms (
-  code text primary key,
-  data jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-alter table public.rooms enable row level security;
-drop policy if exists "gamenite rooms" on public.rooms;
-create policy "gamenite rooms" on public.rooms
-  for all to anon, authenticated
-  using (true) with check (true);</div>
-
-    <h4>Sound</h4>
-    <div class="mrow"><button class="btn ghost" id="btnSndToggle">Toggle clacks &amp; pockets</button></div>
-  </div>
-</div>
-
 <div id="toasts"></div>
 
 <script>
@@ -1112,30 +1077,8 @@ function raf(now){
 // =====================================================================
 // SETTINGS MODAL
 // =====================================================================
-const modal=$('#modal');
- $('#btnSettings').onclick=()=>{ const c=JSON.parse(localStorage.getItem('gn_supa')||'null');
-  $('#supaUrl').value=c?c.url:''; $('#supaKey').value=c?c.key:''; modal.classList.add('open'); refreshIcons(); };
- $('#btnModalClose').onclick=()=>modal.classList.remove('open');
-modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
- $('#btnSqlCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('#sqlBox').textContent.replace('COPY','')); toast('SQL copied.'); }catch(e){ toast('Select and copy manually.',true); } };
- $('#btnSupaSave').onclick=async()=>{
-  const url=$('#supaUrl').value.trim(),key=$('#supaKey').value.trim();
-  const st=$('#supaStat'); st.className='mstat'; st.textContent='Testing…';
-  if(!url||!key){ st.className='mstat bad'; st.textContent='Both fields are needed.'; return; }
-  try{
-    const c=window.supabase.createClient(url,key);
-    const {error}=await c.from('rooms').select('code').limit(1);
-    if(error){ st.className='mstat bad'; st.textContent='Connected, but the rooms table is missing — run the SQL below first.'; return; }
-    localStorage.setItem('gn_supa',JSON.stringify({url,key}));
-    SBc=c; loadSupaMode();
-    if(room) ensureSupaChan(room.code);
-    st.className='mstat ok'; st.textContent='Connected. Tables you open now show up across devices.';
-    fetchSupaRooms(); renderRoomList();
-  }catch(e){ st.className='mstat bad'; st.textContent='Could not reach that URL — check it.'; }
-};
 function loadSupaMode(){ const on=loadSupa(); $('#supaMode').classList.toggle('off',!on); }
- $('#btnSupaClear').onclick=()=>{ localStorage.removeItem('gn_supa'); SBc=null; loadSupaMode();
-  $('#supaStat').textContent='Disconnected. Local play only.'; };
+
  $('#btnSndToggle').onclick=()=>{ sndOn=!sndOn; localStorage.setItem('gn_snd',sndOn?'1':'0');
   $('#btnSound').innerHTML='<i data-lucide="'+(sndOn?'volume-2':'volume-x')+'"></i>'; refreshIcons();
   toast(sndOn?'Clacks on.':'Clacks off.'); };
@@ -1181,5 +1124,10 @@ if(/^[A-Z0-9]{4}$/.test(wantJoin)){
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
