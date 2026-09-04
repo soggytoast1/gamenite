@@ -386,7 +386,7 @@ const BC=('BroadcastChannel' in window)? new BroadcastChannel('gamenite'):null;
 let supaChan=null, supaChanCode=null;
 const seen=new Set();
 function busSend(a,p,to,r){
-  const m={u:uid(),r:(r!==undefined?r:(room?room.code:'')),a:p===undefined?{}:p,f:me.id,to:to||null};
+  const m={u:uid(),r:(r!==undefined?r:(room?room.code:'')),a:a,p:p===undefined?{}:p,f:me.id,to:to||null};
   try{ BC&&BC.postMessage(m); }catch(e){}
   try{ if(supaChan&&supaChanCode===(r!==undefined?r:(room?room.code:''))&&m.r) supaChan.send({type:'broadcast',event:'g',payload:m}); }catch(e){}
 }
