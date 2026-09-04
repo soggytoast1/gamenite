@@ -369,14 +369,18 @@ const myName=()=> (me.name.trim()||'guest-'+me.id.slice(0,4));
 let SBc=null;
 const DEFAULT_SUPA={url:"https://isfvcmmtrdvxulguvkfg.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzZnZjbW10cmR2eHVsZ3V2a2ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NjM2NTIsImV4cCI6MjEwNDAzOTY1Mn0.uHiBJlrebMbdvomyxAZ2WayVuUG5U8BqMOslX7Woook"};
 function loadSupa(){
-  let c=null; try{ c=JSON.parse(localStorage.getItem('gn_supa')||'null'); }catch(e){}
-  if((!c||!c.url) && DEFAULT_SUPA.key && !DEFAULT_SUPA.key.startsWith('PASTE')) c=DEFAULT_SUPA;
-  if(c&&c.url&&c.key){ SBc=window.supabase.createClient(c.url,c.key); $('#supaMode').classList.remove('off'); return true; }
-  $('#supaMode').classList.add('off'); return false;
+  let c=null;
+  try{ c=JSON.parse(localStorage.getItem('gn_supa')||'null'); }catch(e){}
+  if((!c||!c.url||!c.key)&&DEFAULT_SUPA.url&&DEFAULT_SUPA.key) c=DEFAULT_SUPA;
+  SBc=null;
+  if(c&&c.url&&c.key){ try{ SBc=window.supabase.createClient(c.url,c.key); }catch(e){ SBc=null; } }
+  const on=!!SBc;
+  const el=$('#supaMode'); if(el) el.classList.toggle('off',!on);
+  const t=$('#supaModeTxt'); if(t) t.textContent=on?'supabase · live':'supabase · off';
+  return on;
 }
-  if(c&&c.url&&c.key){ SBc=window.supabase.createClient(c.url,c.key); $('#supaMode').classList.remove('off'); return true; } }catch(e){} 
-  $('#supaMode').classList.add('off'); return false; }
-
+loadSupa(); // connect on startup — safe even if your file calls loadSupa() again later
+  
 // ---------- networking: bus over BroadcastChannel + optional Supabase realtime ----------
 const BC=('BroadcastChannel' in window)? new BroadcastChannel('gamenite'):null;
 let supaChan=null, supaChanCode=null;
