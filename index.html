@@ -533,7 +533,7 @@ function startHostLoop(){
 function broadcastRoster(){ if(!hosting||!room) return;
   busSend('roster',{players:room.players.map(x=>({id:x.id,name:x.name,num:x.num})),hostId:room.hostId,inGame:room.inGame}); }
 function supaUpsert(){ if(!SBc||!room||!hosting) return;
-  try{ SBc.from('rooms').upsert({code:room.code,data:{host:myName(),n:room.players.length},updated_at:new Date().toISOString()}); }catch(e){} }
+  try{ SBc.from('rooms').upsert({code:room.code,data:{host:myName(),hostId:room.hostId,players:room.players.map(p=>({id:p.id,name:p.name,num:p.num})),inGame:room.inGame,gameState:G?serG():null},updated_at:new Date().toISOString()}); }catch(e){} }
 
 // guest heartbeat + host-takeover
 if(!guestLoopId) guestLoopId=setInterval(()=>{
@@ -650,7 +650,7 @@ function hostStart(){
   busSend('start',{G:serG()}); broadcastRoster(); syncRoomView(); updateGameUI();
   busSend('chat',{n:null,t:'Rack is set. '+nameOf(G.seats[G.turn])+' breaks.'});
 }
-function broadcastState(){ if(hosting&&room){ busSend('state',{G:serG()}); updateGameUI(); } }
+function broadcastState(){ if(hosting&&room){ busSend('state',{G:serG()}); supaUpsert(); updateGameUI(); } }
 
 // ---------- physics ----------
 function physStep(balls,dt,evts,trk){
