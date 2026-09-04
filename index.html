@@ -392,9 +392,10 @@ function busSend(a,p,to,r){
 }
 if(BC) BC.onmessage=e=>handleMsg(e.data);
 function ensureSupaChan(code){
-  if(!SBc||supaChanCode===code) return;
-  if(supaChan){ try{SBc.removeChannel(supaChan);}catch(e){} }
+  if(supaChanCode===code) return;
+  if(supaChan&&SBc){ try{SBc.removeChannel(supaChan);}catch(e){} }
   supaChanCode=code;
+  if(!SBc) return;
   supaChan=SBc.channel('gnr-'+code,{config:{broadcast:{self:false}}});
   supaChan.on('broadcast',{event:'g'},({payload})=>handleMsg(payload));
   supaChan.subscribe(st=>{ if(st==='SUBSCRIBED'&&pendingJoin) busSend('hello',{name:myName()},null,pendingJoin); });
